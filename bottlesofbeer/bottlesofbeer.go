@@ -13,7 +13,7 @@ var nextAddr string
 var n int
 var conn *rpc.Client
 
-type runInfo struct {
+type RunInfo struct {
 	ID      int
 	bottles int
 }
@@ -22,9 +22,9 @@ type Message struct {
 	text string
 }
 
-type nextHandler struct{}
+type NextHandler struct{}
 
-func (s *nextHandler) next(info runInfo, message *Message) (err error) {
+func (s *NextHandler) Next(info RunInfo, message *Message) (err error) {
 	var identity int
 
 	if n > -1 {
@@ -35,7 +35,7 @@ func (s *nextHandler) next(info runInfo, message *Message) (err error) {
 
 	if info.bottles > 0 {
 		fmt.Println("Buddy ", identity, ": ", info.bottles, "bottles of beer on the wall, ", info.bottles, "bottles of beer. take one down, pass it around...")
-		conn.Call("nextHandler.next", runInfo{ID: identity + 1, bottles: info.bottles - 1}, Message{text: "success"})
+		conn.Call("NextHandler.Next", RunInfo{ID: identity + 1, bottles: info.bottles - 1}, Message{text: "success"})
 	} else {
 		fmt.Println("Buddy ", identity, "NO MORE BOTTLES OF BEEER WOOOOOOOO")
 	}
@@ -51,7 +51,7 @@ func main() {
 	flag.Parse()
 	//TODO: Up to you from here! Remember, you'll need to both listen for
 	//RPC calls and make your own.
-	rpc.Register(&nextHandler{})
+	rpc.Register(&NextHandler{})
 	listener, _ := net.Listen("tcp", ":8040")
 	defer listener.Close()
 
@@ -60,7 +60,7 @@ func main() {
 		defer conn.Close()
 		rpc.Accept(listener)
 		fmt.Println("Buddy 1: ", n, "bottles of beer on the wall, ", n, "bottles of beer. take one down, pass it around...")
-		conn.Call("nextHandler.next", runInfo{ID: 2, bottles: n - 1}, Message{text: "yeay"})
+		conn.Call("NextHandler.Next", RunInfo{ID: 2, bottles: n - 1}, Message{text: "yeay"})
 	} else {
 		rpc.Accept(listener)
 		conn, _ = rpc.Dial("tcp", nextAddr)
